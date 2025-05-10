@@ -269,6 +269,14 @@
     const inhaleInput = document.getElementById('inhale');
     const holdInput = document.getElementById('hold');
     const exhaleInput = document.getElementById('exhale');
+    loadSettings();
+    inhaleInput.addEventListener('input',   saveSettings);
+    holdInput.  addEventListener('input',   saveSettings);
+    exhaleInput.addEventListener('input',   saveSettings);
+    document.getElementById('total')
+              .addEventListener('input',   saveSettings);
+    beepVolumeSlider. addEventListener('input', saveSettings);
+    musicVolumeSlider.addEventListener('input', saveSettings);
     let sync = true;
     [[
       ['inhale-up',1,inhaleInput],['inhale-down',-1,inhaleInput],
@@ -297,7 +305,38 @@
     async function breatheCycle(){if(musicOn)bgMusic.play();for(completed=0;completed<cycles&&!stopped;completed++){cycleCountEl.textContent=completed+1;await breathePhase('Inhale',inhale,120,150);if(hold>0)await breathePhase('Hold',hold,150,150);await breathePhase('Exhale',exhale,150,120);}if(!stopped){status.textContent='Well done!';bgMusic.pause();startBtn.textContent='Restart';}pauseBtn.disabled=true;stopBtn.disabled=true;startBtn.disabled=false;}
     startBtn.addEventListener('click',()=>{startBtn.textContent='Start';stopped=false;paused=false;elapsedTotal=0;completed=0;totalSeconds=Number(document.getElementById('total').value)*60;inhale=Number(inhaleInput.value);hold=Number(holdInput.value);exhale=Number(exhaleInput.value);cycles=Math.floor(totalSeconds/(inhale+hold+exhale));progressBar.style.width='0%';countdownEl.textContent='';cycleCountEl.textContent='0';pauseBtn.disabled=false;stopBtn.disabled=false;startBtn.disabled=true;status.textContent='';breatheCycle();});
     pauseBtn.addEventListener('click',()=>{paused=!paused;pauseBtn.textContent=paused?'Resume':'Pause';if(paused){bgMusic.pause();if(circleAnim)circleAnim.pause();}else{if(musicOn)bgMusic.play();if(circleAnim)circleAnim.play();}});
-    stopBtn.addEventListener('click',()=>{stopped=true;bgMusic.pause();status.textContent='Stopped';countdownEl.textContent='';pauseBtn.disabled=true;stopBtn.disabled=true;startBtn.disabled=false;progressBar.style.width='0%';cycleCountEl.textContent='0';clearInterval(currentInterval);if(circleAnim)circleAnim.cancel();circle.style.width='120px';circle.style.height='120px';});
+    stopBtn.addEventListener('click',()=>{
+      stopped = true;
+      bgMusic.pause();
+      status.textContent = 'Stopped';
+      countdownEl.textContent = '';
+      pauseBtn.textContent = 'Pause';       // <— reset it here
+      pauseBtn.disabled = true;
+      stopBtn.disabled = true;
+      startBtn.disabled = false;
+      progressBar.style.width = '0%';
+      cycleCountEl.textContent = '0';
+      clearInterval(currentInterval);
+      if (circleAnim) circleAnim.cancel();
+      circle.style.width = '120px';
+      circle.style.height = '120px';
+    });
+    function loadSettings() {
+      if (localStorage.getItem('inhale'))    inhaleInput.value = localStorage.getItem('inhale');
+      if (localStorage.getItem('hold'))      holdInput.value   = localStorage.getItem('hold');
+      if (localStorage.getItem('exhale'))    exhaleInput.value = localStorage.getItem('exhale');
+      if (localStorage.getItem('totalMin'))  document.getElementById('total').value = localStorage.getItem('totalMin');
+      if (localStorage.getItem('beepVol'))   beepVolumeSlider.value  = localStorage.getItem('beepVol');
+      if (localStorage.getItem('musicVol')) musicVolumeSlider.value = localStorage.getItem('musicVol');
+    }
+    function saveSettings() {
+      localStorage.setItem('inhale',   inhaleInput.value);
+      localStorage.setItem('hold',     holdInput.value);
+      localStorage.setItem('exhale',   exhaleInput.value);
+      localStorage.setItem('totalMin', document.getElementById('total').value);
+      localStorage.setItem('beepVol',  beepVolumeSlider.value);
+      localStorage.setItem('musicVol', musicVolumeSlider.value);
+    }
   </script>
 </body>
 </html>
