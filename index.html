@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, viewport-fit=cover">
   <title>Custom Breathing Exercise</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
@@ -169,32 +169,62 @@
         margin-bottom: env(safe-area-inset-bottom);
       }
     }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* This makes the top UI take up all available space and scroll if needed */
+    .main-content {
+      flex: 1 1 auto;
+      overflow-y: auto;
+    }
+
+    /* Keeps the controls pinned to the bottom, never overlapping with the content */
+    .bottom-controls {
+      flex-shrink: 0;
+      position: sticky;
+      bottom: env(safe-area-inset-bottom, 0);
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.8); /* same styling as before */
+      padding: 10px 0;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
-  <div id="visual-container">
-    <div id="cycleCount">0</div>
-    <div id="circle"><div id="countdown"></div></div>
-    <div id="status">Ready</div>
-  </div>
-  <div class="settings">
-    <div class="setting">
-      <button id="inhale-up">&#9650;</button>
-      <input id="inhale" type="number" value="5" min="1">
-      <button id="inhale-down">&#9660;</button>
-      <label>In</label>
+  <div class="main-content">
+    <div id="visual-container">
+      <div id="cycleCount">0</div>
+      <div id="circle"><div id="countdown"></div></div>
+      <div id="status">Ready</div>
     </div>
-    <div class="setting">
-      <button id="hold-up">&#9650;</button>
-      <input id="hold" type="number" value="5" min="0">
-      <button id="hold-down">&#9660;</button>
-      <label>Hold</label>
-    </div>
-    <div class="setting">
-      <button id="exhale-up">&#9650;</button>
-      <input id="exhale" type="number" value="5" min="1">
-      <button id="exhale-down">&#9660;</button>
-      <label>Out</label>
+    <div class="settings">
+      <div class="setting">
+        <button id="inhale-up">&#9650;</button>
+        <input id="inhale" type="number" value="5" min="1">
+        <button id="inhale-down">&#9660;</button>
+        <label>In</label>
+      </div>
+      <div class="setting">
+        <button id="hold-up">&#9650;</button>
+        <input id="hold" type="number" value="5" min="0">
+        <button id="hold-down">&#9660;</button>
+        <label>Hold</label>
+      </div>
+      <div class="setting">
+        <button id="exhale-up">&#9650;</button>
+        <input id="exhale" type="number" value="5" min="1">
+        <button id="exhale-down">&#9660;</button>
+        <label>Out</label>
+      </div>
     </div>
   </div>
   <div class="bottom-controls">
