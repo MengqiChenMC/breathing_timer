@@ -161,11 +161,9 @@
     }
     @supports (padding: env(safe-area-inset-bottom)) {
       body {
-        /* ensure the entire page respects the inset */
         padding-bottom: env(safe-area-inset-bottom);
       }
       .bottom-controls {
-        /* extra lift in that inset zone */
         margin-bottom: env(safe-area-inset-bottom);
       }
     }
@@ -180,20 +178,18 @@
       flex-direction: column;
     }
 
-    /* This makes the top UI take up all available space and scroll if needed */
     .main-content {
       flex: 1 1 auto;
       overflow-y: auto;
     }
 
-    /* Keeps the controls pinned to the bottom, never overlapping with the content */
     .bottom-controls {
       flex-shrink: 0;
       position: sticky;
       bottom: env(safe-area-inset-bottom, 0);
       left: 0;
       right: 0;
-      background: rgba(255, 255, 255, 0.8); /* same styling as before */
+      background: rgba(255, 255, 255, 0.8); 
       padding: 10px 0;
       z-index: 10;
     }
@@ -266,6 +262,7 @@
     const bgMusic = document.getElementById('bgMusic');
     const beepVolumeSlider = document.getElementById('beep-volume');
     const musicVolumeSlider = document.getElementById('music-volume');
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const inhaleInput = document.getElementById('inhale');
     const holdInput = document.getElementById('hold');
     const exhaleInput = document.getElementById('exhale');
@@ -299,7 +296,24 @@
     toggleBeepBtn.addEventListener('click',()=>{beepOn=!beepOn;toggleBeepBtn.textContent=beepOn?'🔊':'🔇';if(!beepOn)beepVolumeSlider.value=0;});
     toggleMusicBtn.addEventListener('click',()=>{musicOn=!musicOn;toggleMusicBtn.textContent=musicOn?'🎵':'🔇';if(!musicOn)musicVolumeSlider.value=0;if(musicOn&&!paused&&!stopped)bgMusic.play();else bgMusic.pause();});
     let totalSeconds,inhale,hold,exhale,cycles,elapsedTotal=0,completed=0;let currentInterval,circleAnim;
-    function playBeep(){if(!beepOn)return;const ctx=new(window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(440,ctx.currentTime);gain.gain.setValueAtTime(beepVolume,ctx.currentTime);osc.connect(gain).connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+0.2);}
+    function playBeep() {
+      if (!beepOn) return;
+
+      // if Safari/mobile has auto-suspended the context, kick it awake
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const osc  = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+      gain.gain.setValueAtTime(beepVolume, audioCtx.currentTime);
+
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.2);
+    }
     function phaseWait(sec){return new Promise(resolve=>{let remaining=sec;currentInterval=setInterval(()=>{if(stopped){clearInterval(currentInterval);resolve();}else if(!paused){remaining--;elapsedTotal++;countdownEl.textContent=remaining>0?remaining:'';progressBar.style.width=`${(elapsedTotal/totalSeconds)*100}%`;if(remaining<=0){clearInterval(currentInterval);resolve();}}},1000);});}
     async function breathePhase(name,duration,startSize,endSize){if(stopped)return;status.textContent=name;playBeep();countdownEl.textContent=duration;if(circleAnim)circleAnim.cancel();circleAnim=circle.animate([{width:startSize+'px',height:startSize+'px'},{width:endSize+'px',height:endSize+'px'}],{duration:duration*1000,fill:'forwards'});await phaseWait(duration);}
     async function breatheCycle(){if(musicOn)bgMusic.play();for(completed=0;completed<cycles&&!stopped;completed++){cycleCountEl.textContent=completed+1;await breathePhase('Inhale',inhale,120,150);if(hold>0)await breathePhase('Hold',hold,150,150);await breathePhase('Exhale',exhale,150,120);}if(!stopped){status.textContent='Well done!';bgMusic.pause();startBtn.textContent='Restart';}pauseBtn.disabled=true;stopBtn.disabled=true;startBtn.disabled=false;}
@@ -310,7 +324,7 @@
       bgMusic.pause();
       status.textContent = 'Stopped';
       countdownEl.textContent = '';
-      pauseBtn.textContent = 'Pause';       // <— reset it here
+      pauseBtn.textContent = 'Pause';       
       pauseBtn.disabled = true;
       stopBtn.disabled = true;
       startBtn.disabled = false;
